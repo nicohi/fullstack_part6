@@ -1,19 +1,30 @@
+import { useQuery, useMutation, useQueryClient } from 'react-query'
+import { getAnecdotes, createAnecdote, updateAnecdote } from './requests'
+
 import AnecdoteForm from './components/AnecdoteForm'
 import Notification from './components/Notification'
 
 const App = () => {
+  const queryClient = useQueryClient()
 
   const handleVote = (anecdote) => {
     console.log('vote')
   }
 
-  const anecdotes = [
-    {
-      "content": "If it hurts, do it more often",
-      "id": "47145",
-      "votes": 0
-    },
-  ]
+  const result = useQuery('notes', getAnecdotes, {
+    refetchOnWindowFocus: false,
+    retry: 1
+  })
+
+  if ( result.isLoading ) {
+    return <div>loading data...</div>
+  }
+
+  const anecdotes = result.data
+
+  if (!anecdotes) {
+    return <div>anecdote service not available due to problems in server</div>
+  }
 
   return (
     <div>
