@@ -3,14 +3,19 @@ import { getAnecdotes, createAnecdote, updateAnecdote } from './requests'
 
 import AnecdoteForm from './components/AnecdoteForm'
 import Notification from './components/Notification'
+import { useNotificationDispatch } from './NotificationContext'
 
 const App = () => {
   const queryClient = useQueryClient()
+  const notificationDispatch = useNotificationDispatch()
 
   const newAnecdoteMutation = useMutation(createAnecdote, {
     onSuccess: (newAnecdote) => {
       const anecdotes = queryClient.getQueryData('anecdotes')
       queryClient.setQueryData('anecdotes', anecdotes.concat(newAnecdote))
+    },
+    onError: () => {
+      notificationDispatch({ type: 'SET', payload: 'too short anecdote, must have length of 5 or more' })
     }
   })
 
@@ -19,8 +24,9 @@ const App = () => {
   }
 
   const updateAnecdoteMutation = useMutation(updateAnecdote, {
-    onSuccess: () => {
+    onSuccess: anecdote => {
       queryClient.invalidateQueries('anecdotes')
+      notificationDispatch({ type: 'SET', payload: `anecdote '${anecdote.content}' voted` })
     },
   })
 
