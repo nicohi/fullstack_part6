@@ -5,7 +5,7 @@ import Filter from './Filter'
 const AnecdoteList = () => {
 
   const anecdotes = useSelector(state => {
-    const sorted = state.anecdotes.sort((a,b) => b.votes - a.votes)
+    const sorted = [ ...state.anecdotes ].sort((a,b) => b.votes - a.votes)
     const filtered = sorted.filter(a =>
       a.content.toLowerCase().includes(state.filter.toLowerCase()))
     return filtered
