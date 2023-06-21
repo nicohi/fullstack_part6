@@ -7,11 +7,28 @@ import Notification from './components/Notification'
 const App = () => {
   const queryClient = useQueryClient()
 
-  const handleVote = (anecdote) => {
-    console.log('vote')
+  const newAnecdoteMutation = useMutation(createAnecdote, {
+    onSuccess: (newAnecdote) => {
+      const anecdotes = queryClient.getQueryData('anecdotes')
+      queryClient.setQueryData('anecdotes', anecdotes.concat(newAnecdote))
+    }
+  })
+
+  const addAnecdote = async (content) => {
+    newAnecdoteMutation.mutate({ content, votes: 0 })
   }
 
-  const result = useQuery('notes', getAnecdotes, {
+  const updateAnecdoteMutation = useMutation(updateAnecdote, {
+    onSuccess: () => {
+      queryClient.invalidateQueries('anecdotes')
+    },
+  })
+
+  const handleVote = (anecdote) => {
+    updateAnecdoteMutation.mutate({...anecdote, votes: anecdote.votes + 1 })
+  }
+
+  const result = useQuery('anecdotes', getAnecdotes, {
     refetchOnWindowFocus: false,
     retry: 1
   })
@@ -31,7 +48,7 @@ const App = () => {
       <h3>Anecdote app</h3>
     
       <Notification />
-      <AnecdoteForm />
+      <AnecdoteForm addAnecdote={addAnecdote}/>
     
       {anecdotes.map(anecdote =>
         <div key={anecdote.id}>
